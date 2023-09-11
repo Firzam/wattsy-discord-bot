@@ -8,10 +8,10 @@ load_dotenv()
 FORMAT = '%(asctime)s %(message)s'
 logging.basicConfig(format=FORMAT, level=logging.INFO)
 
-ouiClient = discord.Bot()
+wattsyClient = discord.Bot()
 
-@ouiClient.event
+@wattsyClient.event
 async def on_ready():
-    logging.info('Logged in as ' + ouiClient.user.name)
+    logging.info('Logged in as ' + wattsyClient.user.name)
 
-ouiClient.run(os.getenv("OUI_DISCORD_TOKEN"))
+wattsyClient.run(os.getenv("OUI_DISCORD_TOKEN"))
