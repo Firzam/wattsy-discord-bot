@@ -1,1 +1,1 @@
-# oui-discord-bot
+# wattsy-discord-bot
