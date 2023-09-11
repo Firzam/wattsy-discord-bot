@@ -399,3 +399,6 @@ FodyWeavers.xsd
 
 # Python venv
 oui-env/
+
+# Env file
+.env
