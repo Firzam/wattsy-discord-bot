@@ -7,6 +7,8 @@ from discord.ext import commands
 from yt_dlp import YoutubeDL
 from googleapiclient.discovery import build
 
+import re
+
 load_dotenv()
 
 ydl_opts = {
@@ -21,6 +23,10 @@ ydl_opts = {
 ffmepg_opts = {
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
 }
+
+youtube_regex = (
+    r'(https?://)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)/'
+    r'(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})')
 
 class Youtube(commands.Cog, name='Youtube'):
     def __init__(self, wattsyClient):
@@ -47,6 +53,30 @@ class Youtube(commands.Cog, name='Youtube'):
         }
 
         return song
+    
+    def getSongInfo(self, query):
+        
+        match = re.search(youtube_regex, query)
+    
+        if match:
+            video_id = match.group(6)
+            request = self.youtube.videos().list(
+                part='snippet',
+                id=video_id,
+                maxResults=1,
+                type='video'
+            )
+            
+            response = request.execute()
+            song = {
+                'id': video_id,
+                'title': response['items'][0]['snippet']['title'],
+                'thumbnail': response['items'][0]['snippet']['thumbnails']['default']
+            }
+
+            return song
+        else:
+            return self.search(query)
         
 
     @commands.command(name='play')
