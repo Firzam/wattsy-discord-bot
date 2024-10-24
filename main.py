@@ -19,7 +19,7 @@ wattsyVersion = os.getenv('WATTSY_VERSION')
 
 async def load_cog():
     logging.info('Loading youtube Cog')
-    await wattsyClient.add_cog(Youtube(wattsyClient))
+    await wattsyClient.load_extension('youtube')
 
 @wattsyClient.command
 async def version(ctx):
