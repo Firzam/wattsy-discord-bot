@@ -47,7 +47,7 @@ class Youtube(commands.Cog, name='Youtube'):
         
         response = request.execute()
         song = {
-            'id': response['items'][0]['id']['videoId'],
+            'url': 'https://www.youtube.com/watch?v=' + response['items'][0]['id']['videoId'],
             'title': response['items'][0]['snippet']['title'],
             'thumbnail': response['items'][0]['snippet']['thumbnails']['default']
         }
@@ -68,15 +68,25 @@ class Youtube(commands.Cog, name='Youtube'):
             )
             
             response = request.execute()
-            song = {
-                'id': video_id,
+            songInfo = {
+                'url': query,
                 'title': response['items'][0]['snippet']['title'],
                 'thumbnail': response['items'][0]['snippet']['thumbnails']['default']
             }
-
-            return song
         else:
-            return self.search(query)
+            songInfo = self.search(query)
+        
+        songEmbed = discord.Embed(title = songInfo['title'])
+
+        songEmbed.set_author(name='Wattsy')
+        songEmbed.set_thumbnail(url=songInfo['thumbnail']['url'])
+
+        songEmbed.add_field(name = 'URL',
+                            value = songInfo['url'])
+
+        song = songInfo
+        song['embed'] = songEmbed
+        return song
         
 
     @commands.command(name='play')
@@ -108,7 +118,7 @@ class Youtube(commands.Cog, name='Youtube'):
             serverQueue = queue_construct
             self.queue[guild_id] = serverQueue
         
-        song = self.search(arg)
+        song = self.getSongInfo(arg)
         serverQueue['songs'].append(song)
 
         if serverQueue.get('connection') is None:
@@ -133,16 +143,18 @@ class Youtube(commands.Cog, name='Youtube'):
             await connection.disconnect()
             return
 
-        song = self.youtubeDownloader.extract_info('https://www.youtube.com/watch?v=' + serverQueue['songs'][0]['id']
+        songStream = self.youtubeDownloader.extract_info(serverQueue['songs'][0]['url']
                                                    , download=False)
         
-        player = discord.FFmpegPCMAudio(song['url'], **ffmepg_opts)
+        player = discord.FFmpegPCMAudio(songStream['url'], **ffmepg_opts)
 
         try:
+            await ctx.send(embed = serverQueue['songs'][0]['embed'])
             connection.play(player
                             , after=lambda: self.wattsyClient.loop.create_task(self.nextMusic(ctx))
                             , signal_type='music')
-        except:
+        except Exception as e:
+            print(e)
             del self.queue[guild_id]
             await ctx.send('An error happen while trying to listen to: ' + serverQueue['songs'][0]['title'])
             await connection.disconnect()
