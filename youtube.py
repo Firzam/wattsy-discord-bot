@@ -4,8 +4,10 @@ from dotenv import load_dotenv
 import discord
 from discord.ext import commands
 
-import youtube_dl
+from yt_dlp import YoutubeDL
 from googleapiclient.discovery import build
+
+import re
 
 load_dotenv()
 
@@ -18,6 +20,14 @@ ydl_opts = {
     }],
 }
 
+ffmepg_opts = {
+    'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+}
+
+youtube_regex = (
+    r'(https?://)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)/'
+    r'(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})')
+
 class Youtube(commands.Cog, name='Youtube'):
     def __init__(self, wattsyClient):
         self.wattsyClient = wattsyClient
@@ -25,7 +35,7 @@ class Youtube(commands.Cog, name='Youtube'):
         self.api_key = os.getenv('YOUTUBE_API_KEY')
 
         self.youtube = build('youtube', 'v3', developerKey=self.api_key)
-        self.youtubeDownloader = youtube_dl.YoutubeDL(ydl_opts)
+        self.youtubeDownloader = YoutubeDL(ydl_opts)
     
     def search(self, query):
         request = self.youtube.search().list(
@@ -37,15 +47,49 @@ class Youtube(commands.Cog, name='Youtube'):
         
         response = request.execute()
         song = {
-            'id': response['items'][0]['id']['videoId'],
+            'url': 'https://www.youtube.com/watch?v=' + response['items'][0]['id']['videoId'],
             'title': response['items'][0]['snippet']['title'],
             'thumbnail': response['items'][0]['snippet']['thumbnails']['default']
         }
 
         return song
+    
+    def getSongInfo(self, query):
+        
+        match = re.search(youtube_regex, query)
+    
+        if match:
+            video_id = match.group(6)
+            request = self.youtube.videos().list(
+                part='snippet',
+                id=video_id,
+                maxResults=1,
+                type='video'
+            )
+            
+            response = request.execute()
+            songInfo = {
+                'url': query,
+                'title': response['items'][0]['snippet']['title'],
+                'thumbnail': response['items'][0]['snippet']['thumbnails']['default']
+            }
+        else:
+            songInfo = self.search(query)
+        
+        songEmbed = discord.Embed(title = songInfo['title'])
+
+        songEmbed.set_author(name='Wattsy')
+        songEmbed.set_thumbnail(url=songInfo['thumbnail']['url'])
+
+        songEmbed.add_field(name = 'URL',
+                            value = songInfo['url'])
+
+        song = songInfo
+        song['embed'] = songEmbed
+        return song
         
 
-    @commands.command()
+    @commands.command(name='play')
     async def play(self, ctx, *, arg):
         voiceChannel = ctx.author.voice.channel
         guild_id = ctx.guild.id
@@ -74,19 +118,19 @@ class Youtube(commands.Cog, name='Youtube'):
             serverQueue = queue_construct
             self.queue[guild_id] = serverQueue
         
-        song = self.search(arg)
+        song = self.getSongInfo(arg)
         serverQueue['songs'].append(song)
 
         if serverQueue.get('connection') is None:
-            serverQueue['connection'] = serverQueue['voiceChannel'].connect()
+            serverQueue['connection'] = await serverQueue['voiceChannel'].connect()
             await self.playMusic(ctx)
 
     async def nextMusic(self, ctx):
         guild_id = ctx.guild.id
-        serverQueue = self.queue['guild_id']
+        serverQueue = self.queue[guild_id]
         serverQueue['songs'].pop(0)
 
-        self.playMusic(ctx)
+        await self.playMusic(ctx)
 
     async def playMusic(self, ctx):
         guild_id = ctx.guild.id
@@ -94,11 +138,26 @@ class Youtube(commands.Cog, name='Youtube'):
         connection = serverQueue.get('connection')
 
         if len(serverQueue['songs']) == 0:
+            del self.queue[guild_id]
             await ctx.send('Disconnecting')
-            connection.disconnect()
-            self.queue.pop(guild_id)
+            await connection.disconnect()
             return
 
-        song = self.youtubeDownloader.download(['https://www.youtube.com/watch?v=' + serverQueue['songs'][0]['id']])
-        connection.play(FFmpegAudio(song), 
-                        after=self.nextMusic(ctx))
+        songStream = self.youtubeDownloader.extract_info(serverQueue['songs'][0]['url']
+                                                   , download=False)
+        
+        player = discord.FFmpegPCMAudio(songStream['url'], **ffmepg_opts)
+
+        try:
+            await ctx.send(embed = serverQueue['songs'][0]['embed'])
+            connection.play(player
+                            , after=lambda: self.wattsyClient.loop.create_task(self.nextMusic(ctx))
+                            , signal_type='music')
+        except Exception as e:
+            print(e)
+            del self.queue[guild_id]
+            await ctx.send('An error happen while trying to listen to: ' + serverQueue['songs'][0]['title'])
+            await connection.disconnect()
+    
+async def setup(wattsyClient):
+    await wattsyClient.add_cog(Youtube(wattsyClient))
