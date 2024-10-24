@@ -1,5 +1,5 @@
 discord.py
 discord.py[voice]
 python-dotenv
-youtube-dl
+yt_dlp
 google-api-python-client
