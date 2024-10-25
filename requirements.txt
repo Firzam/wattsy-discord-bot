@@ -1,5 +1,6 @@
 discord.py
 discord.py[voice]
+psycopg2
 python-dotenv
 yt_dlp
 google-api-python-client
