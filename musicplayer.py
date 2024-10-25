@@ -18,17 +18,23 @@ ydl_opts = {
         'preferredcodec': 'mp3',
         'preferredquality': '192',
     }],
+
 }
 
 ffmepg_opts = {
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
 }
 
+soundcloud_regex = (
+    r'(https?://)?(www\.)?(soundcloud\.com|snd\.sc)/'
+    r'([a-zA-Z0-9._%+-]+/([a-zA-Z0-9._%+-]+))'
+)
+
 youtube_regex = (
     r'(https?://)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)/'
     r'(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})')
 
-class Youtube(commands.Cog, name='Youtube'):
+class MusicPlayer(commands.Cog, name='MusicPlayer'):
     def __init__(self, wattsyClient):
         self.wattsyClient = wattsyClient
         self.queue = {}
@@ -56,30 +62,26 @@ class Youtube(commands.Cog, name='Youtube'):
     
     def getSongInfo(self, query):
         
-        match = re.search(youtube_regex, query)
-    
-        if match:
-            video_id = match.group(6)
-            request = self.youtube.videos().list(
-                part='snippet',
-                id=video_id,
-                maxResults=1,
-                type='video'
-            )
-            
-            response = request.execute()
-            songInfo = {
-                'url': query,
-                'title': response['items'][0]['snippet']['title'],
-                'thumbnail': response['items'][0]['snippet']['thumbnails']['default']
-            }
+        soundcloud_match = re.search(soundcloud_regex, query)
+        youtube_match = re.search(youtube_regex, query)
+
+        if soundcloud_match or youtube_match:
+            songRawInfo = self.youtubeDownloader.extract_info(query, download=False)
         else:
-            songInfo = self.search(query)
+            songRawInfo = self.youtubeDownloader.extract_info(self.search(query), download=False)
+        
+        
+        songInfo ={
+            'url': songRawInfo['webpage_url'],
+            'title': songRawInfo['title'],
+            'thumbnail': songRawInfo['thumbnail'],
+            'stream': songRawInfo['url']
+        }
         
         songEmbed = discord.Embed(title = songInfo['title'])
 
         songEmbed.set_author(name='Wattsy')
-        songEmbed.set_thumbnail(url=songInfo['thumbnail']['url'])
+        songEmbed.set_thumbnail(url=songInfo['thumbnail'])
 
         songEmbed.add_field(name = 'URL',
                             value = songInfo['url'])
@@ -91,12 +93,13 @@ class Youtube(commands.Cog, name='Youtube'):
 
     @commands.command(name='play')
     async def play(self, ctx, *, arg):
-        voiceChannel = ctx.author.voice.channel
         guild_id = ctx.guild.id
 
-        if(voiceChannel is None):
+        if(ctx.author.voice is None):
             await ctx.send('You are not in a voice channel')
             return
+        else:
+            voiceChannel = ctx.author.voice.channel
         
         serverQueue = self.queue.get(guild_id)
         if (serverQueue is not None) and (voiceChannel is not serverQueue['voiceChannel']):
@@ -142,11 +145,8 @@ class Youtube(commands.Cog, name='Youtube'):
             await ctx.send('Disconnecting')
             await connection.disconnect()
             return
-
-        songStream = self.youtubeDownloader.extract_info(serverQueue['songs'][0]['url']
-                                                   , download=False)
         
-        player = discord.FFmpegPCMAudio(songStream['url'], **ffmepg_opts)
+        player = discord.FFmpegPCMAudio(serverQueue['songs'][0]['stream'], **ffmepg_opts)
 
         try:
             await ctx.send(embed = serverQueue['songs'][0]['embed'])
@@ -160,4 +160,4 @@ class Youtube(commands.Cog, name='Youtube'):
             await connection.disconnect()
     
 async def setup(wattsyClient):
-    await wattsyClient.add_cog(Youtube(wattsyClient))
+    await wattsyClient.add_cog(MusicPlayer(wattsyClient))

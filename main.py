@@ -5,8 +5,6 @@ from dotenv import load_dotenv
 import discord
 from discord.ext import commands
 
-from youtube import Youtube
-
 load_dotenv()
 FORMAT = '%(asctime)s %(message)s'
 logging.basicConfig(format=FORMAT, level=logging.INFO)
@@ -18,8 +16,8 @@ wattsyClient = commands.Bot(command_prefix='>', intents=intents)
 wattsyVersion = os.getenv('WATTSY_VERSION')
 
 async def load_cog():
-    logging.info('Loading youtube Cog')
-    await wattsyClient.load_extension('youtube')
+    logging.info('Loading Cogs')
+    await wattsyClient.load_extension('musicplayer')
 
 @wattsyClient.command
 async def version(ctx):
