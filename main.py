@@ -20,7 +20,7 @@ async def load_cog():
     await wattsyClient.load_extension('musicplayer')
 
 @wattsyClient.command
-async def version(ctx):
+async def version(ctx : commands.Context):
     await ctx.send(f'This bot is using Wattsy version {wattsyVersion}')
 
 @wattsyClient.event

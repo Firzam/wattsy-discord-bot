@@ -128,14 +128,14 @@ class MusicPlayer(commands.Cog, name='MusicPlayer'):
             serverQueue['connection'] = await serverQueue['voiceChannel'].connect()
             await self.playMusic(ctx)
 
-    async def nextMusic(self, ctx):
+    async def nextMusic(self, ctx : commands.Context):
         guild_id = ctx.guild.id
         serverQueue = self.queue[guild_id]
         serverQueue['songs'].pop(0)
 
         await self.playMusic(ctx)
 
-    async def playMusic(self, ctx):
+    async def playMusic(self, ctx : commands.Context):
         guild_id = ctx.guild.id
         serverQueue = self.queue.get(guild_id)
         connection = serverQueue.get('connection')
