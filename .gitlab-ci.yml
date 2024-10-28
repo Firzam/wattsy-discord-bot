@@ -1,0 +1,27 @@
+stages:
+  - build
+  - cleanup
+
+variables:
+  DOCKER_IMAGE: ayerman/wattsy-bot
+  TAG: >
+    ${CI_COMMIT_TAG:-${CI_COMMIT_REF_NAME == "int" && echo "snapshot-${CI_COMMIT_SHORT_SHA}" || echo "${CI_COMMIT_SHORT_SHA}"}}
+
+build:
+  image: docker:27.2.0
+  stage: build
+  services:
+    - docker:27.2.0-dind
+  script:
+    - docker build -t $DOCKER_IMAGE:$TAG .
+
+cleanup:
+  image: docker:27.2.0
+  stage: cleanup
+  services:
+    - docker:27.2.0-dind
+  dependencies:
+    - build
+  script:
+    - docker rmi $DOCKER_IMAGE:$TAG || true
+  when: on_failure
