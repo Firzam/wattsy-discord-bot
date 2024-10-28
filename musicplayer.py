@@ -109,6 +109,7 @@ class MusicPlayer(commands.Cog, name='MusicPlayer'):
         if serverQueue is None:
             queue_construct = {
                 'messageChannel': None,
+                'messageNotification': None,
                 'voiceChannel': None,
                 'connection': None,
                 'songs': [],
@@ -149,7 +150,10 @@ class MusicPlayer(commands.Cog, name='MusicPlayer'):
         player = discord.FFmpegPCMAudio(serverQueue['songs'][0]['stream'], **ffmepg_opts)
 
         try:
-            await ctx.send(embed = serverQueue['songs'][0]['embed'])
+            if serverQueue['messageNotificaiton'] is not None:
+                serverQueue['messageNotificaiton'].edit(embed = serverQueue['songs'][0]['embed'])
+            else:
+                serverQueue['messageNotificaiton'] = await ctx.send(embed = serverQueue['songs'][0]['embed'])
             connection.play(player
                             , after=lambda: self.wattsyClient.loop.create_task(self.nextMusic(ctx))
                             , signal_type='music')
