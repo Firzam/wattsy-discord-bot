@@ -9,6 +9,8 @@ from googleapiclient.discovery import build
 
 import re
 
+from typing import TypedDict, List, Optional
+
 load_dotenv()
 
 ydl_opts = {
@@ -33,6 +35,14 @@ soundcloud_regex = (
 youtube_regex = (
     r'(https?://)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)/'
     r'(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})')
+
+class QueueConstruct(TypedDict):
+    messageChannel: Optional[discord.TextChannel]
+    messageNotification: Optional[discord.Message]
+    voiceChannel: Optional[discord.VoiceChannel]
+    connection: Optional[discord.VoiceClient]
+    songs: List[any] = []
+    volume: int = 1
 
 class MusicPlayer(commands.Cog, name='MusicPlayer'):
     def __init__(self, wattsyClient):
@@ -60,7 +70,7 @@ class MusicPlayer(commands.Cog, name='MusicPlayer'):
 
         return song
     
-    def getSongInfo(self, query):
+    def getSongInfo(self, query: str):
         
         soundcloud_match = re.search(soundcloud_regex, query)
         youtube_match = re.search(youtube_regex, query)
@@ -92,7 +102,7 @@ class MusicPlayer(commands.Cog, name='MusicPlayer'):
         
 
     @commands.command(name='play')
-    async def play(self, ctx, *, arg):
+    async def play(self, ctx : commands.Context, *, arg):
         guild_id = ctx.guild.id
 
         if(ctx.author.voice is None):
@@ -107,14 +117,7 @@ class MusicPlayer(commands.Cog, name='MusicPlayer'):
             return
         
         if serverQueue is None:
-            queue_construct = {
-                'messageChannel': None,
-                'messageNotification': None,
-                'voiceChannel': None,
-                'connection': None,
-                'songs': [],
-                'volume': 1 
-            }
+            queue_construct = QueueConstruct()
 
             queue_construct['messageChannel'] = ctx.channel
             queue_construct['voiceChannel'] = voiceChannel
@@ -154,6 +157,10 @@ class MusicPlayer(commands.Cog, name='MusicPlayer'):
                 serverQueue['messageNotificaiton'].edit(embed = serverQueue['songs'][0]['embed'])
             else:
                 serverQueue['messageNotificaiton'] = await ctx.send(embed = serverQueue['songs'][0]['embed'])
+
+            message = serverQueue['messageNotificaiton']
+            message.add_reaction('➡️')
+            
             connection.play(player
                             , after=lambda: self.wattsyClient.loop.create_task(self.nextMusic(ctx))
                             , signal_type='music')
