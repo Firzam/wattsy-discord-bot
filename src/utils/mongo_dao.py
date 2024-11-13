@@ -12,8 +12,7 @@ class MongoDAO():
             self.client = MongoClient(
                 host=os.getenv('MONGODB_HOST'),
                 username=os.getenv('MONGODB_USER'),
-                password=os.getenv('MONGODB_PASSWORD'),
-                authSource=os.getenv('MONGODB_AUTH_DB')
+                password=os.getenv('MONGODB_PASSWORD')
             )
             
             self.client.admin.command('ping')

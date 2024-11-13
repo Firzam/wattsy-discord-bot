@@ -11,10 +11,10 @@ class PostgresDAO():
             self.connection_pool = psycopg2.pool.SimpleConnectionPool(
                 minconn = 1,
                 maxconn = 10,
-                host = os.getenv('DATABASE_HOST'),
-                database = os.getenv('DATABASE_DB'),
-                user = os.getenv('DATABASE_USER'),
-                password = os.getenv('DATABASE_PASSWORD')
+                host = os.getenv('POSTGRES_HOST'),
+                database = os.getenv('POSTGRES_DB'),
+                user = os.getenv('POSTGRES_USER'),
+                password = os.getenv('POSTGRES_PASSWORD')
             )
             self.connection_pool.autocommit = True
         except Exception as e:
