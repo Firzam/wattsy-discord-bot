@@ -11,12 +11,14 @@ logging.basicConfig(format=FORMAT, level=logging.INFO)
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.moderation = True
 
 wattsyClient = commands.Bot(command_prefix='>', intents=intents)
 wattsyVersion = os.getenv('WATTSY_VERSION')
 
 async def load_cog():
     logging.info('Loading Cogs')
+    await wattsyClient.load_extension('mods')
     await wattsyClient.load_extension('musicplayer')
 
 @wattsyClient.command
