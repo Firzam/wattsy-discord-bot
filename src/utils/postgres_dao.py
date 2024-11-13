@@ -5,7 +5,7 @@ import psycopg2
 
 load_dotenv()
 
-class DAO():
+class PostgresDAO():
     def __init__(self):
         try:
             self.connection_pool = psycopg2.pool.SimpleConnectionPool(
@@ -36,4 +36,4 @@ class DAO():
             self.connection_pool.closeall()
 
 # Create a singleton instance of Database for use in other modules
-db_instance = DAO()
+postgres_instance = PostgresDAO()
