@@ -16,8 +16,7 @@ class Twitch(commands.Cogs, name="twitch"):
         self.app = FastAPI()
 
         self.twitch_collection = mongo_instance.get_collection("twitch_subscription")
-
-        self.twitch_webhook_signature = os.getenv('TWITCH_WEBHOOK_SIGNATURE')
+        self.twitch_signature = os.getenv("TWITCH_SIGNATURE")
     
     def start_webhook():
         uvicorn.run(self.app, host="0.0.0.0", port=80)
@@ -39,7 +38,7 @@ class Twitch(commands.Cogs, name="twitch"):
     async def twitch_webhook(self, request : Request, X_Hub_Signature : str = Header(None)):
         body = await request.body()
 
-        if not self.verify_signature(self.twitch_webhook_signature, body, X_Hub_Signature):
+        if not self.verify_signature(self.twitch_signature, body, X_Hub_Signature):
             raise HTTPException(status_code=403, detail="Invalid signature")
 
         data = await request.json()
