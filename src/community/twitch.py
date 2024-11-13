@@ -7,7 +7,7 @@ import uvicorn
 from fastapi import FastAPI, Header, HTTPException, Request
 
 from utils.mongo_dao import mongo_instance
-from utils.logger import logger
+from utils.logger import Logger
 
 load_dotenv()
 
@@ -15,12 +15,13 @@ class Twitch(commands.Cog, name="twitch"):
     def __init__(self, wattsyClient):
         self.wattsyClient = wattsyClient
         self.app = FastAPI()
+        self.logger = Logger(__name__).getLogger()
 
         self.twitch_collection = mongo_instance.get_collection("twitch_subscription")
         self.twitch_signature = os.getenv("TWITCH_SIGNATURE")
-        logger.info("Twich Cog loaded")
+        self.logger.info("Twich Cog loaded")
     
-    def start_webhook():
+    def start_webhook(self):
         uvicorn.run(self.app, host="0.0.0.0", port=80)
 
     def get_guild_and_channel(self, broadcaster_id):

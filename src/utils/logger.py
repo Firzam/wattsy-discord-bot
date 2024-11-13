@@ -1,9 +1,13 @@
 import logging
 
-# Disable logging for the root logger to prevent default/basic logs
-logging.getLogger().handlers.clear()
+class Logger():
+    def __init__(self, name):
+        logging.getLogger().handlers.clear()
 
-FORMAT = '%(asctime)s %(message)s'
-logging.basicConfig(format=FORMAT, level=logging.INFO)
+        FORMAT = '%(asctime)s %(levelname)-8s %(name)-15s %(message)s'
+        logging.basicConfig(format=FORMAT, level=logging.INFO)
 
-logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(name)
+    
+    def getLogger(self):
+        return self.logger

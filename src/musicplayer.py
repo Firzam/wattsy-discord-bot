@@ -11,6 +11,8 @@ import re
 
 from typing import TypedDict, List, Optional
 
+from utils.logger import Logger
+
 load_dotenv()
 
 ydl_opts = {
@@ -49,9 +51,11 @@ class MusicPlayer(commands.Cog, name='MusicPlayer'):
         self.wattsyClient = wattsyClient
         self.queue = {}
         self.api_key = os.getenv('YOUTUBE_API_KEY')
+        self.logger = Logger(__name__).getLogger()
 
         self.youtube = build('youtube', 'v3', developerKey=self.api_key)
         self.youtubeDownloader = YoutubeDL(ydl_opts)
+        self.logger.info("Music Player Cog loaded")
     
     def search(self, query):
         request = self.youtube.search().list(

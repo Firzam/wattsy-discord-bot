@@ -1,12 +1,14 @@
 import os
 from dotenv import load_dotenv
 
-from utils.logger import logger
+from utils.logger import Logger
 
 import discord
 from discord.ext import commands
 
 load_dotenv()
+
+logger = Logger(__name__).getLogger()
 
 intents = discord.Intents.default()
 intents.message_content = True

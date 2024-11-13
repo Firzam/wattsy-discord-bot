@@ -3,14 +3,15 @@ from discord.ext import commands
 
 from dao.mods_dao import ModsDAO
 
-from utils.logger import logger
+from utils.logger import Logger
 
 class Mods(commands.Cog, name='Mods'):
     def __init__(self, wattsyClient):
         self.wattsyClient = wattsyClient
         self.modsDAO = ModsDAO()
+        self.logger = Logger(__name__).getLogger()
 
-        logger.info("Mods Cog loaded")
+        self.logger.info("Mods Cog loaded")
         
 
 async def setup(wattsyClient):
