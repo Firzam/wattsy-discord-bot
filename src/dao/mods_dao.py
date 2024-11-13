@@ -1,6 +1,4 @@
-import psycopg2
-
-from ..utils.postgres_dao import postgres_instance
+from utils.postgres_dao import postgres_instance
 
 class ModsDAO():
     def __init__(self):

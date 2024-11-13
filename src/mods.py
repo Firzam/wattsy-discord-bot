@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from DAO.mods_dao import ModsDAO
+from dao.mods_dao import ModsDAO
 
 class Mods(commands.Cog, name='Mods'):
     def __init__(self, wattsyClient):
