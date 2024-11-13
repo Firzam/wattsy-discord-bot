@@ -6,17 +6,19 @@ from discord.ext import commands
 import uvicorn
 from fastapi import FastAPI, Header, HTTPException, Request
 
-from ..utils.mongo_dao import mongo_instance
+from utils.mongo_dao import mongo_instance
+from utils.logger import logger
 
 load_dotenv()
 
-class Twitch(commands.Cogs, name="twitch"):
+class Twitch(commands.Cog, name="twitch"):
     def __init__(self, wattsyClient):
         self.wattsyClient = wattsyClient
         self.app = FastAPI()
 
         self.twitch_collection = mongo_instance.get_collection("twitch_subscription")
         self.twitch_signature = os.getenv("TWITCH_SIGNATURE")
+        logger.info("Twich Cog loaded")
     
     def start_webhook():
         uvicorn.run(self.app, host="0.0.0.0", port=80)
@@ -54,3 +56,6 @@ class Twitch(commands.Cogs, name="twitch"):
             await self.send_discord_message(f"A new clip was created! Watch it here: {data['event']['url']}")
 
         return {"status": "ok"}
+
+async def setup(wattsyClient):
+    await wattsyClient.add_cog(Twitch(wattsyClient))

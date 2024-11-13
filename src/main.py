@@ -1,13 +1,12 @@
 import os
-import logging
 from dotenv import load_dotenv
+
+from utils.logger import logger
 
 import discord
 from discord.ext import commands
 
 load_dotenv()
-FORMAT = '%(asctime)s %(message)s'
-logging.basicConfig(format=FORMAT, level=logging.INFO)
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -17,9 +16,10 @@ wattsyClient = commands.Bot(command_prefix='>', intents=intents)
 wattsyVersion = os.getenv('WATTSY_VERSION')
 
 async def load_cog():
-    logging.info('Loading Cogs')
+    logger.info('Loading Cogs')
     await wattsyClient.load_extension('mods')
     await wattsyClient.load_extension('musicplayer')
+    await wattsyClient.load_extension('community.twitch')
 
 @wattsyClient.command
 async def version(ctx : commands.Context):
@@ -27,8 +27,8 @@ async def version(ctx : commands.Context):
 
 @wattsyClient.event
 async def on_ready():
-    logging.info('Logged in as ' + wattsyClient.user.name)
-    logging.info(f'Start Wattsy version {wattsyVersion}')
+    logger.info('Logged in as ' + wattsyClient.user.name)
+    logger.info(f'Start Wattsy version {wattsyVersion}')
     await load_cog()
 
 
