@@ -1,7 +1,9 @@
 from discord.ext import commands
 
-import uvicorn
 from fastapi import FastAPI, Header, HTTPException, Request
+import hmac
+import hashlib
+import uvicorn
 
 from utils.config import config
 from utils.mongo_dao import mongo_instance
@@ -32,12 +34,28 @@ class Twitch(commands.Cog, name="twitch"):
             channel = guild.get_channel(channel_id)
             if channel:
                 await channel.send(message)
+    
+    def verify_signature(self, body, headers):
+        twitch_signature_header = headers.get("Twitch-Eventsub-Message-Signature")
+        message_id = headers.get("Twitch-Eventsub-Message-Id")
+        timestamp = headers.get("Twitch-Eventsub-Message-Timestamp")
+
+        if not twitch_signature_header or not message_id or not timestamp:
+            return False
+
+        # Construct the HMAC message
+        message = message_id + timestamp + body.decode()
+        computed_hmac = hmac.new(self.twitch_signature.encode(), message.encode(), hashlib.sha256).hexdigest()
+        expected_signature = f"sha256={computed_hmac}"
+
+        # Use a timing-safe comparison to verify the signature
+        return hmac.compare_digest(twitch_signature_header, expected_signature)
 
     @app.post("/twitch")
-    async def twitch_webhook(self, request : Request, X_Hub_Signature : str = Header(None)):
+    async def twitch_webhook(self, request : Request, headers : str = Header(None)):
         body = await request.body()
 
-        if not self.verify_signature(self.twitch_signature, body, X_Hub_Signature):
+        if not self.verify_signature(body, headers):
             raise HTTPException(status_code=403, detail="Invalid signature")
 
         data = await request.json()
