@@ -1,12 +1,8 @@
-import os
-from dotenv import load_dotenv
-
-from utils.logger import Logger
-
 import discord
 from discord.ext import commands
 
-load_dotenv()
+from utils.config import config
+from utils.logger import Logger
 
 logger = Logger(__name__).getLogger()
 
@@ -15,7 +11,7 @@ intents.message_content = True
 intents.moderation = True
 
 wattsyClient = commands.Bot(command_prefix='>', intents=intents)
-wattsyVersion = os.getenv('WATTSY_VERSION')
+wattsyVersion = config.wattsyVersion
 
 async def load_cog():
     logger.info('Loading Cogs')
@@ -34,4 +30,4 @@ async def on_ready():
     await load_cog()
 
 
-wattsyClient.run(os.getenv('DISCORD_TOKEN'))
+wattsyClient.run(config.wattsyToken)

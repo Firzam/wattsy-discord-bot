@@ -1,6 +1,3 @@
-import os
-from dotenv import load_dotenv
-
 import discord
 from discord.ext import commands
 
@@ -11,9 +8,8 @@ import re
 
 from typing import TypedDict, List, Optional
 
+from utils.config import config
 from utils.logger import Logger
-
-load_dotenv()
 
 ydl_opts = {
     'format': 'bestaudio/best',
@@ -50,7 +46,7 @@ class MusicPlayer(commands.Cog, name='MusicPlayer'):
     def __init__(self, wattsyClient):
         self.wattsyClient = wattsyClient
         self.queue = {}
-        self.api_key = os.getenv('YOUTUBE_API_KEY')
+        self.api_key = config.youtube_api_key
         self.logger = Logger(__name__).getLogger()
 
         self.youtube = build('youtube', 'v3', developerKey=self.api_key)

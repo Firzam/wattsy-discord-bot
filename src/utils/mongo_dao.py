@@ -1,25 +1,22 @@
-import os
-from dotenv import load_dotenv
-
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
-load_dotenv()
+from utils.config import config
 
 class MongoDAO():
     def __init__(self):
         try:
             self.client = MongoClient(
-                host=os.getenv('MONGODB_HOST'),
-                username=os.getenv('MONGODB_USER'),
-                password=os.getenv('MONGODB_PASSWORD')
+                host = config.mongo_host,
+                username = config.mongo_username,
+                password = config.mongo_password
             )
             
             self.client.admin.command('ping')
             print("INFO: Successfully connected to MongoDB")
 
             # Access the specific database
-            self.database = self.client[os.getenv('MONGODB_DB')]
+            self.database = self.client[config.mongo_db]
         except ConnectionFailure as e:
             print(f"Error connecting to MongoDB: {e}")
             self.client = None

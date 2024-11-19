@@ -1,10 +1,7 @@
-import os
-from dotenv import load_dotenv
-
 import psycopg2
 import psycopg2.pool
 
-load_dotenv()
+from utils.config import config
 
 class PostgresDAO():
     def __init__(self):
@@ -12,10 +9,10 @@ class PostgresDAO():
             self.connection_pool = psycopg2.pool.SimpleConnectionPool(
                 minconn = 1,
                 maxconn = 10,
-                host = os.getenv('POSTGRES_HOST'),
-                database = os.getenv('POSTGRES_DB'),
-                user = os.getenv('POSTGRES_USER'),
-                password = os.getenv('POSTGRES_PASSWORD')
+                host = config.postgre_host,
+                database = config.postgres_database,
+                user = config.postgre_user,
+                password = config.postgres_password
             )
             self.connection_pool.autocommit = True
         except Exception as e:

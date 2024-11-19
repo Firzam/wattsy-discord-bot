@@ -1,15 +1,11 @@
-import os
-from dotenv import load_dotenv
-
 from discord.ext import commands
 
 import uvicorn
 from fastapi import FastAPI, Header, HTTPException, Request
 
+from utils.config import config
 from utils.mongo_dao import mongo_instance
 from utils.logger import Logger
-
-load_dotenv()
 
 class Twitch(commands.Cog, name="twitch"):
     def __init__(self, wattsyClient):
@@ -18,7 +14,7 @@ class Twitch(commands.Cog, name="twitch"):
         self.logger = Logger(__name__).getLogger()
 
         self.twitch_collection = mongo_instance.get_collection("twitch_subscription")
-        self.twitch_signature = os.getenv("TWITCH_SIGNATURE")
+        self.twitch_signature = config.twitch_signature
         self.logger.info("Twich Cog loaded")
     
     def start_webhook(self):
