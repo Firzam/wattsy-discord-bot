@@ -1,5 +1,7 @@
 from discord.ext import commands
 
+from controllers.twitch_controller import TwitchController
+
 from utils.config import config
 from utils.mongo_dao import mongo_instance
 from utils.logger import Logger
@@ -9,7 +11,8 @@ class Twitch(commands.Cog, name="twitch"):
         self.wattsyClient = wattsyClient
         self.logger = Logger(__name__).getLogger()
 
-        self.twitch_collection = mongo_instance.get_collection("twitch_subscription")
+        #self.twitch_collection = mongo_instance.get_collection("twitch_subscription")
+        twitchController = TwitchController(self)
         self.logger.info("Twich Cog loaded")
 
     def get_guild_and_channel(self, broadcaster_id):
