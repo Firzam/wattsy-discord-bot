@@ -6,10 +6,7 @@ from utils.logger import Logger
 
 logger = Logger(__name__).getLogger()
 
-intents = discord.Intents.default()
-intents.message_content = True
-intents.moderation = True
-intents.voice_states = True
+intents = config.setIntents()
 
 wattsyClient = commands.Bot(command_prefix='>', intents=intents)
 wattsyVersion = config.wattsyVersion

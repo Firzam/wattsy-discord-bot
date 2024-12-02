@@ -1,7 +1,15 @@
 import os
 from dotenv import load_dotenv
 
+import discord
+from enum import Enum
+
 load_dotenv()
+
+class DiscordIntents(Enum):
+    MESSAGE_CONTENT = "message_content"
+    MODERATION = "moderation"
+    VOICE_STATE = "voice_states"
 
 class Config():
     def __init__(self):
@@ -23,5 +31,14 @@ class Config():
         
         self.wattsyVersion = os.getenv('WATTSY_VERSION')
         self.wattsyToken = os.getenv('DISCORD_TOKEN')
+    
+    def setIntents(self):
+        intents = discord.Intents.default()
+        for intent in DiscordIntents:
+            if hasattr(intents, intent.value):
+                setattr(intents, intent.value, True)
+            else:
+                print(f"Warning: Intent '{intent.value}' is not a valid attribute of discord.Intents")
+        return intents
 
 config = Config()
