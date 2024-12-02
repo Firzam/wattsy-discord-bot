@@ -9,15 +9,16 @@ logger = Logger(__name__).getLogger()
 intents = discord.Intents.default()
 intents.message_content = True
 intents.moderation = True
+intents.voice_states = True
 
 wattsyClient = commands.Bot(command_prefix='>', intents=intents)
 wattsyVersion = config.wattsyVersion
 
 async def load_cog():
     logger.info('Loading Cogs')
-    await wattsyClient.load_extension('community.mods')
-    await wattsyClient.load_extension('community.musicplayer')
-    await wattsyClient.load_extension('community.twitch')
+    #await wattsyClient.load_extension('cogs.mods')
+    await wattsyClient.load_extension('cogs.musicplayer')
+    #await wattsyClient.load_extension('cogs.twitch')
 
 @wattsyClient.command
 async def version(ctx : commands.Context):
