@@ -9,7 +9,7 @@ import re
 from typing import TypedDict, List, Optional
 
 from utils.config import config
-from utils.logger import Logger
+from utils.logger import logger
 
 ydl_opts = {
     'format': 'bestaudio/best',
@@ -47,7 +47,7 @@ class MusicPlayer(commands.Cog, name='MusicPlayer'):
         self.wattsyClient = wattsyClient
         self.queue = {}
         self.api_key = config.youtube_api_key
-        self.logger = Logger(__name__).getLogger()
+        
 
         self.youtube = build('youtube', 'v3', developerKey=self.api_key)
         self.youtubeDownloader = YoutubeDL(ydl_opts)

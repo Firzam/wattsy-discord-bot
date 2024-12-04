@@ -2,9 +2,7 @@ import discord
 from discord.ext import commands
 
 from utils.config import config
-from utils.logger import Logger
-
-logger = Logger(__name__).getLogger()
+from utils.logger import logger
 
 intents = config.setIntents()
 
@@ -28,4 +26,4 @@ async def on_ready():
     await load_cog()
 
 
-wattsyClient.run(config.wattsyToken)
+wattsyClient.run(config.wattsyToken, log_handler=None)

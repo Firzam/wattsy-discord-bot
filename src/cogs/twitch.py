@@ -4,12 +4,12 @@ from controllers.twitch_controller import TwitchController
 
 from utils.config import config
 from utils.mongo_dao import mongo_instance
-from utils.logger import Logger
+from utils.logger import logger
 
 class Twitch(commands.Cog, name="twitch"):
     def __init__(self, wattsyClient):
         self.wattsyClient = wattsyClient
-        self.logger = Logger(__name__).getLogger()
+        
 
         #self.twitch_collection = mongo_instance.get_collection("twitch_subscription")
         twitchController = TwitchController(self)

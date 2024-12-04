@@ -4,14 +4,14 @@ import uvicorn
 from fastapi import FastAPI, Header, HTTPException, Request
 
 from utils.config import config
-from utils.logger import Logger
+from utils.logger import logger
 
 
 
 class TwitchController():
     def __init__(self, twitch_cog):
         self.twitch_cog = twitch_cog
-        self.logger = Logger(__name__).getLogger()
+        
 
         self.app = FastAPI()
         self.twitch_signature = config.twitch_signature
