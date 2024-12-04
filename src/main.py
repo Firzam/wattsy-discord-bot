@@ -26,4 +26,4 @@ async def on_ready():
     await load_cog()
 
 
-wattsyClient.run(config.wattsyToken, log_handler=None)
+wattsyClient.run(config.wattsyToken)
