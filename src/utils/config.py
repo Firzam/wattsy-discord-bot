@@ -51,9 +51,9 @@ class Config():
     def getNewToken(self):
         refresh_url = 'https://id.twitch.tv/oauth2/token'
         refresh_headers = {
-            "client_id": self.twitch_clientId,
-            "client_secret": self.twitch_clientSecret,
-            "grant_type": "client_credentials"
+            'client_id': self.twitch_clientId,
+            'client_secret': self.twitch_clientSecret,
+            'grant_type': 'client_credentials'
         }
 
         refresh_token = requests.post(refresh_url, headers=refresh_headers)
@@ -62,9 +62,8 @@ class Config():
         new_token = refresh_token_response['access_token']
 
         config_builder = {
-            "_id": "twitch_token",
-            "access_token": new_token
-
+            '_id': 'twitch_token',
+            'access_token': new_token
         }
 
         self.config_collection.replace_one()
@@ -75,8 +74,8 @@ class Config():
 
     def getTwitchToken(self):
         if self.twitch_authorization is not None:
-            validate_url = "https://id.twitch.tv/oauth2/token"
-            validate_headers = {"Authorization": f"Bearer {self.twitch_authorization}"}
+            validate_url = 'https://id.twitch.tv/oauth2/token'
+            validate_headers = {'Authorization': f'Bearer {self.twitch_authorization}'}
             response = requests.get(validate_url, headers=validate_headers)
 
             status_code = response.status_code
