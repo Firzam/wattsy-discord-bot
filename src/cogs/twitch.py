@@ -25,10 +25,9 @@ class Twitch(commands.Cog, name="twitch"):
             if channel:
                 await channel.send(message)
     
-    async def on_trigger(self, request):
-        data = await request.json()
-        broadcaster_id = data["condition"]["broadcaster_id"]
-        event_type = data["subscription"]["type"]
+    async def on_trigger(self, data):
+        broadcaster_id = data['condition']['broadcaster_id']
+        event_type = data['subscription']['type']
 
         guild_id, channel_id = self.get_guild_and_channel(broadcaster_id)
 

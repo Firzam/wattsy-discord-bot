@@ -24,7 +24,7 @@ class TwitchController(commands.Cog, name="twitch_controller"):
         @self.app.route('/twitch', methods=['POST'])
         async def twitch_webhook():
             headers = request.headers
-            body = request.data
+            body = request.get_json()
 
             if not self.verify_signature(body, headers):
                 logger.warning("\"/twitch\" endpoint was called with the wrong signature from " + request.remote_addr)
