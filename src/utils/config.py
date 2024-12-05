@@ -4,6 +4,11 @@ from dotenv import load_dotenv
 import discord
 from enum import Enum
 
+from utils.logger import logger
+from utils.mongo_dao import mongo_instance
+
+import requests
+
 load_dotenv()
 
 class DiscordIntents(Enum):
@@ -31,6 +36,8 @@ class Config():
         
         self.wattsyVersion = os.getenv('WATTSY_VERSION')
         self.wattsyToken = os.getenv('DISCORD_TOKEN')
+
+        self.config_collection = mongo_instance.get_collection('config')
     
     def setIntents(self):
         intents = discord.Intents.default()
@@ -38,7 +45,51 @@ class Config():
             if hasattr(intents, intent.value):
                 setattr(intents, intent.value, True)
             else:
-                print(f"Warning: Intent '{intent.value}' is not a valid attribute of discord.Intents")
+                print(f'Warning: Intent "{intent.value}" is not a valid attribute of discord.Intents')
         return intents
+
+    def getNewToken(self):
+        refresh_url = 'https://id.twitch.tv/oauth2/token'
+        refresh_headers = {
+            "client_id": self.twitch_clientId,
+            "client_secret": self.twitch_clientSecret,
+            "grant_type": "client_credentials"
+        }
+
+        refresh_token = requests.post(refresh_url, headers=refresh_headers)
+        refresh_token_response = refresh_token.json()
+
+        new_token = refresh_token_response['access_token']
+
+        config_builder = {
+            "_id": "twitch_token",
+            "access_token": new_token
+
+        }
+
+        self.config_collection.replace_one()
+
+        logger.info('Twitch API Token has been refresh')
+
+        return new_token
+
+    def getTwitchToken(self):
+        if self.twitch_authorization is not None:
+            validate_url = "https://id.twitch.tv/oauth2/token"
+            validate_headers = {"Authorization": f"Bearer {self.twitch_authorization}"}
+            response = requests.get(validate_url, headers=validate_headers)
+
+            status_code = response.status_code
+            client_id = response.json()['client_id']
+
+            if status_code == 200 & client_id == self.twitch_clientId:
+                return self.twitch_authorization
+            elif status_code == 401:
+                logger.warning('Twitch API Token is no longer valid.')
+                return self.getNewToken()
+        else:
+            self.twitch_authorization = self.config_collection.find_one({'_id': 'twitch_token'})['access_token']
+            return self.getTwitchToken()
+
 
 config = Config()
