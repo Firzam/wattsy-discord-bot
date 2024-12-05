@@ -1,20 +1,40 @@
+import discord
+from discord.ext import commands, tasks
+
+from flask import Flask, abort, request
 import hmac
 import hashlib
-import uvicorn
-from fastapi import FastAPI, Header, HTTPException, Request
 
 from utils.config import config
 from utils.logger import logger
 
+class TwitchController(commands.Cog, name="twitch_controller"):
+    def __init__(self, wattsyClient : commands.Bot):
+        self.wattsyClient = wattsyClient
+        self.twitch_cog = wattsyClient.get_cog('twitch')
 
-
-class TwitchController():
-    def __init__(self, twitch_cog):
-        self.twitch_cog = twitch_cog
-        
-
-        self.app = FastAPI()
         self.twitch_signature = config.twitch_signature
+
+        self.app = Flask(__name__)
+        
+        @self.app.route('/version')
+        def version():
+            return {"version": config.wattsyVersion}
+
+        @self.app.route('/twitch', methods=['POST'])
+        async def twitch_webhook():
+            headers = request.headers
+            body = request.data
+
+            if not self.verify_signature(body, headers):
+                logger.warning("\"/twitch\" endpoint was called with the wrong signature from " + request.remote_addr)
+                abort(403)
+
+            await self.twitch_cog.on_trigger(body)
+
+            return {"status": "ok"}
+        
+        self.wattsyClient.loop.create_task(self.startServer())
 
     def verify_signature(self, body, headers):
         twitch_signature_header = headers.get("Twitch-Eventsub-Message-Signature")
@@ -32,14 +52,14 @@ class TwitchController():
         # Use a timing-safe comparison to verify the signature
         return hmac.compare_digest(twitch_signature_header, expected_signature)
     
-    def setup_route(self):
-        @self.app.post("/twitch")
-        async def twitch_webhook(self, request : Request, headers : str = Header(None)):
-            body = await request.body()
+    @tasks.loop()
+    async def startServer(self):
+        self.app.logger
+        self.app.run(host='0.0.0.0', port=80, debug=True, use_reloader=False)
 
-            if not self.verify_signature(body, headers):
-                raise HTTPException(status_code=403, detail="Invalid signature")
+    @startServer.before_loop
+    async def beforeStart(self):
+        await self.wattsyClient.wait_until_ready()
 
-            await self.twitch_cog.on_trigger(body)
-
-            return {"status": "ok"}
+async def setup(wattsyClient):
+    await wattsyClient.add_cog(TwitchController(wattsyClient))

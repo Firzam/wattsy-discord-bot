@@ -51,7 +51,7 @@ class MusicPlayer(commands.Cog, name='MusicPlayer'):
 
         self.youtube = build('youtube', 'v3', developerKey=self.api_key)
         self.youtubeDownloader = YoutubeDL(ydl_opts)
-        self.logger.info("Music Player Cog loaded")
+        logger.info("Music Player Cog loaded")
     
     def search(self, query):
         request = self.youtube.search().list(

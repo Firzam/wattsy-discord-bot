@@ -1,4 +1,3 @@
-import discord
 import logging
 import logging.handlers
 
@@ -11,8 +10,8 @@ class Logger():
         handler = logging.handlers.RotatingFileHandler(
             filename='discord.log',
             encoding='utf-8',
-            maxBytes=32 * 1024 * 1024,  # 32 MiB
-            backupCount=5,  # Rotate through 5 files
+            maxBytes=32 * 1024 * 1024,
+            backupCount=5,
         )
         dt_fmt = '%Y-%m-%d %H:%M:%S'
         formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', dt_fmt, style='{')
@@ -20,5 +19,8 @@ class Logger():
 
         self.logger.addHandler(handler)
     
+    def getLogger(self):
+        return self.logger
+    
 
-logger = Logger()
+logger = Logger().getLogger()

@@ -14,6 +14,7 @@ async def load_cog():
     #await wattsyClient.load_extension('cogs.mods')
     await wattsyClient.load_extension('cogs.musicplayer')
     await wattsyClient.load_extension('cogs.twitch')
+    await wattsyClient.load_extension('controllers.twitch_controller')
 
 @wattsyClient.command
 async def version(ctx : commands.Context):

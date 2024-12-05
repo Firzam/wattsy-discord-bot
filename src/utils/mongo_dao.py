@@ -23,7 +23,7 @@ class MongoDAO():
             self.database = None
 
     def get_collection(self, collection_name):
-        if self.database:
+        if self.database is not None:
             return self.database[collection_name]
         else:
             raise ConnectionError("No available MongoDB connection.")

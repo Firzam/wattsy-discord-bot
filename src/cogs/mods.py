@@ -9,9 +9,7 @@ class Mods(commands.Cog, name='Mods'):
     def __init__(self, wattsyClient):
         self.wattsyClient = wattsyClient
         self.modsDAO = ModsDAO()
-        
-
-        self.logger.info("Mods Cog loaded")
+        logger.info("Mods Cog loaded")
         
 
 async def setup(wattsyClient):

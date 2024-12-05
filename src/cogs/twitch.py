@@ -9,11 +9,8 @@ from utils.logger import logger
 class Twitch(commands.Cog, name="twitch"):
     def __init__(self, wattsyClient):
         self.wattsyClient = wattsyClient
-        
-
-        #self.twitch_collection = mongo_instance.get_collection("twitch_subscription")
-        twitchController = TwitchController(self)
-        self.logger.info("Twich Cog loaded")
+        self.twitch_collection = mongo_instance.get_collection("twitch_subscription")
+        logger.info("Twich Cog loaded")
 
     def get_guild_and_channel(self, broadcaster_id):
         record = self.twitch_collection.find_one({"broadcaster_id": broadcaster_id})
