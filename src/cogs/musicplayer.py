@@ -1,6 +1,3 @@
-import os
-from dotenv import load_dotenv
-
 import discord
 from discord.ext import commands
 
@@ -11,7 +8,8 @@ import re
 
 from typing import TypedDict, List, Optional
 
-load_dotenv()
+from utils.config import config
+from utils.logger import logger
 
 ydl_opts = {
     'format': 'bestaudio/best',
@@ -48,10 +46,12 @@ class MusicPlayer(commands.Cog, name='MusicPlayer'):
     def __init__(self, wattsyClient):
         self.wattsyClient = wattsyClient
         self.queue = {}
-        self.api_key = os.getenv('YOUTUBE_API_KEY')
+        self.api_key = config.youtube_api_key
+        
 
         self.youtube = build('youtube', 'v3', developerKey=self.api_key)
         self.youtubeDownloader = YoutubeDL(ydl_opts)
+        logger.info("Music Player Cog loaded")
     
     def search(self, query):
         request = self.youtube.search().list(
@@ -62,16 +62,10 @@ class MusicPlayer(commands.Cog, name='MusicPlayer'):
         )
         
         response = request.execute()
-        song = {
-            'url': 'https://www.youtube.com/watch?v=' + response['items'][0]['id']['videoId'],
-            'title': response['items'][0]['snippet']['title'],
-            'thumbnail': response['items'][0]['snippet']['thumbnails']['default']
-        }
 
-        return song
+        return 'https://www.youtube.com/watch?v=' + response['items'][0]['id']['videoId']
     
     def getSongInfo(self, query: str):
-        
         soundcloud_match = re.search(soundcloud_regex, query)
         youtube_match = re.search(youtube_regex, query)
 
@@ -121,6 +115,8 @@ class MusicPlayer(commands.Cog, name='MusicPlayer'):
 
             queue_construct['messageChannel'] = ctx.channel
             queue_construct['voiceChannel'] = voiceChannel
+            queue_construct['songs'] = []
+            queue_construct['messageNotification'] = None
 
             serverQueue = queue_construct
             self.queue[guild_id] = serverQueue
@@ -150,16 +146,16 @@ class MusicPlayer(commands.Cog, name='MusicPlayer'):
             await connection.disconnect()
             return
         
-        player = discord.FFmpegPCMAudio(serverQueue['songs'][0]['stream'], **ffmepg_opts)
+        player = discord.FFmpegOpusAudio(serverQueue['songs'][0]['stream'], **ffmepg_opts)
 
         try:
-            if serverQueue['messageNotificaiton'] is not None:
-                serverQueue['messageNotificaiton'].edit(embed = serverQueue['songs'][0]['embed'])
+            if serverQueue['messageNotification'] is not None:
+                serverQueue['messageNotification'].edit(embed = serverQueue['songs'][0]['embed'])
             else:
-                serverQueue['messageNotificaiton'] = await ctx.send(embed = serverQueue['songs'][0]['embed'])
+                serverQueue['messageNotification'] = await ctx.send(embed = serverQueue['songs'][0]['embed'])
 
-            message = serverQueue['messageNotificaiton']
-            message.add_reaction('➡️')
+            message = serverQueue['messageNotification']
+            await message.add_reaction('➡️')
             
             connection.play(player
                             , after=lambda: self.wattsyClient.loop.create_task(self.nextMusic(ctx))

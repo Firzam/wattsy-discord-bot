@@ -1,25 +1,20 @@
-import os
-import logging
-from dotenv import load_dotenv
-
 import discord
 from discord.ext import commands
 
-load_dotenv()
-FORMAT = '%(asctime)s %(message)s'
-logging.basicConfig(format=FORMAT, level=logging.INFO)
+from utils.config import config
+from utils.logger import logger
 
-intents = discord.Intents.default()
-intents.message_content = True
-intents.moderation = True
+intents = config.setIntents()
 
 wattsyClient = commands.Bot(command_prefix='>', intents=intents)
-wattsyVersion = os.getenv('WATTSY_VERSION')
+wattsyVersion = config.wattsyVersion
 
 async def load_cog():
-    logging.info('Loading Cogs')
-    await wattsyClient.load_extension('mods')
-    await wattsyClient.load_extension('musicplayer')
+    logger.info('Loading Cogs')
+    #await wattsyClient.load_extension('cogs.mods')
+    await wattsyClient.load_extension('cogs.musicplayer')
+    await wattsyClient.load_extension('cogs.twitch')
+    await wattsyClient.load_extension('controllers.twitch_controller')
 
 @wattsyClient.command
 async def version(ctx : commands.Context):
@@ -27,9 +22,9 @@ async def version(ctx : commands.Context):
 
 @wattsyClient.event
 async def on_ready():
-    logging.info('Logged in as ' + wattsyClient.user.name)
-    logging.info(f'Start Wattsy version {wattsyVersion}')
+    logger.info('Logged in as ' + wattsyClient.user.name)
+    logger.info(f'Start Wattsy version {wattsyVersion}')
     await load_cog()
 
 
-wattsyClient.run(os.getenv('DISCORD_TOKEN'))
+wattsyClient.run(config.wattsyToken)

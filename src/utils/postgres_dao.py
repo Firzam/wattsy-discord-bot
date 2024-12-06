@@ -1,20 +1,18 @@
-import os
-from dotenv import load_dotenv
-
 import psycopg2
+import psycopg2.pool
 
-load_dotenv()
+from utils.config import config
 
-class DAO():
+class PostgresDAO():
     def __init__(self):
         try:
             self.connection_pool = psycopg2.pool.SimpleConnectionPool(
                 minconn = 1,
                 maxconn = 10,
-                host = os.getenv('DATABASE_HOST'),
-                database = os.getenv('DATABASE_DB'),
-                user = os.getenv('DATABASE_USER'),
-                password = os.getenv('DATABASE_PASSWORD')
+                host = config.postgre_host,
+                database = config.postgres_database,
+                user = config.postgre_user,
+                password = config.postgres_password
             )
             self.connection_pool.autocommit = True
         except Exception as e:
@@ -36,4 +34,4 @@ class DAO():
             self.connection_pool.closeall()
 
 # Create a singleton instance of Database for use in other modules
-db_instance = DAO()
+postgres_instance = PostgresDAO()
