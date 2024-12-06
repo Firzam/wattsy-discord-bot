@@ -5,7 +5,7 @@ from flask import Flask, abort, request
 import hmac
 import hashlib
 
-from utils.config import config
+from utils.config import config, twitchConfig
 from utils.logger import logger
 
 class TwitchController(commands.Cog, name="twitch_controller"):
@@ -13,7 +13,7 @@ class TwitchController(commands.Cog, name="twitch_controller"):
         self.wattsyClient = wattsyClient
         self.twitch_cog = wattsyClient.get_cog('twitch')
 
-        self.twitch_signature = config.twitch_signature
+        self.twitch_signature = twitchConfig.twitch_signature
 
         self.app = Flask(__name__)
         
@@ -54,8 +54,9 @@ class TwitchController(commands.Cog, name="twitch_controller"):
     
     @tasks.loop()
     async def startServer(self):
+        from waitress import serve
         self.app.logger
-        self.app.run(host='0.0.0.0', port=80, debug=True, use_reloader=False)
+        serve(self.app, host='0.0.0.0', port=80)
 
     @startServer.before_loop
     async def beforeStart(self):
