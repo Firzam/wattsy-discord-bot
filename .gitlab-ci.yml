@@ -1,5 +1,6 @@
 stages:
   - build
+  - serve
   - cleanup
 
 variables:
@@ -14,6 +15,16 @@ build:
     - docker:27.2.0-dind
   script:
     - docker build -t $DOCKER_IMAGE:$TAG .
+
+tag-to-latest:
+  image: docker:27.2.0
+  stage: serve
+  services:
+    - docker:27.2.0-dind
+  dependencies:
+    - build
+  script:
+    - docker tag $DOCKER_IMAGE:$TAG $DOCKER_IMAGE:latest
 
 cleanup:
   image: docker:27.2.0
