@@ -1,5 +1,6 @@
 stages:
   - build
+  - qa
   - serve
   - cleanup
 
@@ -15,6 +16,13 @@ build:
     - docker:27.2.0-dind
   script:
     - docker build -t $DOCKER_IMAGE:$TAG .
+
+linter:
+  image: $DOCKER_IMAGE:latest
+  stage: qa
+  script:
+    - pip install pylint
+    - pylint src
 
 tag-to-latest:
   image: docker:27.2.0
