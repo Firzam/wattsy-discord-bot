@@ -46,6 +46,17 @@ tag-to-latest:
   script:
     - docker tag $DOCKER_IMAGE:$TAG $DOCKER_IMAGE:latest
 
+deploy-as-latest:
+  image: docker:27.2.0
+  stage: serve
+  extends: .docker-job
+  services:
+    - docker:27.2.0-dind
+  dependencies:
+    - tag-to-latest
+  script:
+    - TAG=$TAG docker compose up -d
+
 cleanup:
   image: docker:27.2.0
   stage: cleanup
