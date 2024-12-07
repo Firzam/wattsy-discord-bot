@@ -17,9 +17,6 @@ RUN python -m pip install -r requirements.txt
 
 COPY src/* /app
 
-COPY source-env.sh .
-RUN chmod +x source-env.sh
-
-CMD [ "source-env.sh" ]
+CMD [ "python", "/app/main.py" ]
 
 # docker build --build-arg WATTSY_VERSION=${CI_COMMIT} -t discord-bot .
