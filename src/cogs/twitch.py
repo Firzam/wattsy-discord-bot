@@ -1,6 +1,6 @@
 from discord.ext import commands
 
-from utils.config import config
+from utils.config import config, twitchConfig
 from utils.mongo_dao import mongo_instance
 from utils.logger import logger
 
@@ -36,10 +36,10 @@ class Twitch(commands.Cog, name="twitch"):
         elif event_type == "clip.create":
             await self.send_discord_message(f"A new clip was created! Watch it here: {data['event']['url']}")
 
-    def getBroadcasterIdByUrl(self, name: str):
+    def getBroadcasterIdByAccountName(self, name: str):
         headers = {
-            'Authorization' : 'Bearer ' + config.getTwitchToken(),
-            'Client-Id': config.twitch_clientId
+            'Authorization' : 'Bearer ' + twitchConfig.getTwitchToken(),
+            'Client-Id': twitchConfig.twitch_clientId
         }
         params = {
             'login': name

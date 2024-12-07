@@ -78,21 +78,21 @@ class TwichConfig():
         return new_token
 
     def getTwitchToken(self):
-        if config.twitch_authorization is not None:
+        if self.twitch_access_token  is not None:
             validate_url = 'https://id.twitch.tv/oauth2/token'
-            validate_headers = {'Authorization': f'Bearer {config.twitch_authorization}'}
+            validate_headers = {'Authorization': f'Bearer {self.twitch_access_token }'}
             response = requests.get(validate_url, headers=validate_headers)
 
             status_code = response.status_code
             client_id = response.json()['client_id']
 
             if status_code == 200 & client_id == self.twitch_clientId:
-                return config.twitch_authorization
+                return self.twitch_access_token 
             elif status_code == 401:
                 logger.warning('Twitch API Token is no longer valid.')
                 return self.getNewToken()
         else:
-            config.twitch_authorization = self.config_collection.find_one({'_id': 'twitch_token'})['access_token']
+            self.twitch_access_token  = self.config_collection.find_one({'_id': 'twitch_token'})['access_token']
             return self.getTwitchToken()
 
 twitchConfig = TwichConfig()
