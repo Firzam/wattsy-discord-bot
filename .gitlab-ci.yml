@@ -9,12 +9,15 @@ stages:
     - if : $CI_COMMIT_BRANCH == "dev"
       variables:
         TAG: dev-${CI_COMMIT_SHORT_SHA}
+        SECRETS: ${SECRETS-DEV}
     - if : $CI_COMMIT_BRANCH == "int"
       variables:
         TAG: snapshot-${CI_COMMIT_SHORT_SHA}
+        SECRETS: ${SECRETS-INT}
     - if : $CI_COMMIT_TAG
       variables:
         TAG: $CI_COMMIT_TAG
+        SECRETS: ${SECRETS-PROD}
 
 variables:
   DOCKER_IMAGE: ayerman/wattsy-bot
