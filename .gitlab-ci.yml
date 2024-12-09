@@ -10,6 +10,9 @@ stages:
       variables:
         TAG: dev-${CI_COMMIT_SHORT_SHA}
         SECRETS: ${SECRETS_DEV}
+      changes:
+        - src/*
+        - Dockerfile
     - if : $CI_COMMIT_BRANCH == "int"
       variables:
         TAG: snapshot-${CI_COMMIT_SHORT_SHA}
@@ -42,7 +45,7 @@ linter:
     - pip install pylint
     - pylint src
 
-publish-versions:
+tag-to-latest:
   image: docker:27.2.0
   stage: serve
   extends: .docker-job
@@ -52,6 +55,19 @@ publish-versions:
     - build
   script:
     - docker tag $DOCKER_IMAGE:$TAG $DOCKER_IMAGE:latest
+
+publish-versions:
+  image: docker:27.2.0
+  stage: serve
+  extends: .docker-job
+  services:
+    - docker:27.2.0-dind
+  dependencies:
+    - tag-to-latest
+  rules:
+    - if: $CI_COMMIT_BRANCH == "dev"
+      when: never
+  script:
     - docker push $DOCKER_IMAGE:$TAG
     - docker push $DOCKER_IMAGE:latest
 
@@ -63,6 +79,9 @@ deploy-as-latest:
     - docker:27.2.0-dind
   dependencies:
     - publish-versions
+  rules:
+    - if: $CI_COMMIT_BRANCH == "dev"
+      when: never
   script:
     - docker compose pull
     - docker compose up -d
