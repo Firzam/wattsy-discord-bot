@@ -1,6 +1,6 @@
 from discord.ext import commands
 
-from utils.config import config
+from utils.config import config, twitchConfig
 from utils.mongo_dao import mongo_instance
 from utils.logger import logger
 
@@ -24,23 +24,22 @@ class Twitch(commands.Cog, name="twitch"):
             channel = guild.get_channel(channel_id)
             if channel:
                 await channel.send(message)
-    
+
     async def on_trigger(self, data):
         broadcaster_id = data['condition']['broadcaster_id']
         event_type = data['subscription']['type']
 
         guild_id, channel_id = self.get_guild_and_channel(broadcaster_id)
 
-        # Send a message on Discord depending on the event type
         if event_type == "stream.online":
             await self.send_discord_message("A live stream has started on Twitch!")
         elif event_type == "clip.create":
             await self.send_discord_message(f"A new clip was created! Watch it here: {data['event']['url']}")
-    
-    def getBroadcasterIdByUrl(self, name: str):
+
+    def getBroadcasterIdByAccountName(self, name: str):
         headers = {
-            'Authorization' : 'Bearer ' + config.getTwitchToken(),
-            'Client-Id': config.twitch_clientId
+            'Authorization' : 'Bearer ' + twitchConfig.getTwitchToken(),
+            'Client-Id': twitchConfig.twitch_clientId
         }
         params = {
             'login': name
@@ -48,13 +47,13 @@ class Twitch(commands.Cog, name="twitch"):
         api_url = "https://api.twitch.tv/helix/users"
 
         response = requests.get(api_url, params=params, headers=headers).json()
-        
+
         return response['data']['id']
 
     def checkExistingConfig(self, broadcaster_id):
         if self.twitch_collection.find_one({'_id': broadcaster_id}) is not None:
             self.twitch_collection.delete_one({'_id': broadcaster_id})
-    
+
     @commands.command(name='twitch')
     async def twitch_command(self, ctx : commands.Context, subCommand, *, name):
         if subCommand == 'set-account':

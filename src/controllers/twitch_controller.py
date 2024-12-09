@@ -1,4 +1,3 @@
-import discord
 from discord.ext import commands, tasks
 
 from flask import Flask, abort, request
@@ -16,7 +15,7 @@ class TwitchController(commands.Cog, name="twitch_controller"):
         self.twitch_signature = twitchConfig.twitch_signature
 
         self.app = Flask(__name__)
-        
+
         @self.app.route('/version')
         def version():
             return {"version": config.wattsyVersion}
@@ -33,7 +32,7 @@ class TwitchController(commands.Cog, name="twitch_controller"):
             await self.twitch_cog.on_trigger(body)
 
             return {"status": "ok"}
-        
+
         self.wattsyClient.loop.create_task(self.startServer())
 
     def verify_signature(self, body, headers):
@@ -44,22 +43,20 @@ class TwitchController(commands.Cog, name="twitch_controller"):
         if not twitch_signature_header or not message_id or not timestamp:
             return False
 
-        # Construct the HMAC message
         message = message_id + timestamp + body.decode()
         computed_hmac = hmac.new(self.twitch_signature.encode(), message.encode(), hashlib.sha256).hexdigest()
         expected_signature = f"sha256={computed_hmac}"
 
-        # Use a timing-safe comparison to verify the signature
         return hmac.compare_digest(twitch_signature_header, expected_signature)
-    
+
     @tasks.loop()
-    async def startServer(self):
+    async def start_server(self):
         from waitress import serve
         self.app.logger
         serve(self.app, host='0.0.0.0', port=80)
 
-    @startServer.before_loop
-    async def beforeStart(self):
+    @start_server.before_loop
+    async def before_start(self):
         await self.wattsyClient.wait_until_ready()
 
 async def setup(wattsyClient):

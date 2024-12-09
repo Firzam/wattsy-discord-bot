@@ -1,0 +1,18 @@
+
+services:
+  wattsy:
+    image:
+    container_name: ayerman/wattsy-bot:${TAG}
+    restart: unless-stopped
+    env_file: ${SECRETS}
+    networks:
+      - database
+      - web
+
+networks:
+  database:
+    name: database
+    external: true
+  web:
+    name: web
+    external: true
