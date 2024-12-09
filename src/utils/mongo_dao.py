@@ -2,6 +2,7 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
 from utils.config import config
+from utils.logger import logger
 
 class MongoDAO():
     def __init__(self):
@@ -13,12 +14,12 @@ class MongoDAO():
             )
             
             self.client.admin.command('ping')
-            print("INFO: Successfully connected to MongoDB")
+            logger.info('Successfully connected to MongoDB')
 
             # Access the specific database
             self.database = self.client[config.mongo_db]
         except ConnectionFailure as e:
-            print(f"Error connecting to MongoDB: {e}")
+            logger.error(f'Error connecting to MongoDB: {e}')
             self.client = None
             self.database = None
 
@@ -31,7 +32,7 @@ class MongoDAO():
     def close_connection(self):
         if self.client:
             self.client.close()
-            print("MongoDB connection closed.")
+            logger.info('MongoDB connection closed')
 
 # Create a singleton instance of Database for use in other modules
 mongo_instance = MongoDAO()
