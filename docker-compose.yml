@@ -2,7 +2,7 @@
 services:
   wattsy:
     image:
-    container_name: ayerman/wattsy-bot:$TAG
+    container_name: ayerman/wattsy-bot:${TAG}
     restart: unless-stopped
     env_file: ${SECRETS}
     networks:

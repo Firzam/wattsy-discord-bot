@@ -35,7 +35,7 @@ linter:
     - pip install pylint
     - pylint src
 
-tag-to-latest:
+publish-versions:
   image: docker:27.2.0
   stage: serve
   extends: .docker-job
@@ -45,6 +45,8 @@ tag-to-latest:
     - build
   script:
     - docker tag $DOCKER_IMAGE:$TAG $DOCKER_IMAGE:latest
+    - docker push $DOCKER_IMAGE:$TAG
+    - docker push $DOCKER_IMAGE:latest
 
 deploy-as-latest:
   image: docker:27.2.0
@@ -55,7 +57,8 @@ deploy-as-latest:
   dependencies:
     - tag-to-latest
   script:
-    - TAG=$TAG docker compose up -d
+    - docker compose pull
+    - docker compose up -d
 
 cleanup:
   image: docker:27.2.0
