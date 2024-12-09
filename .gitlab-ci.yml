@@ -18,6 +18,8 @@ stages:
       variables:
         TAG: $CI_COMMIT_TAG
         SECRETS: ${SECRETS_PROD}
+  before_script:
+    - echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
 
 variables:
   DOCKER_IMAGE: ayerman/wattsy-bot
