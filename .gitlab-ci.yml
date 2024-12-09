@@ -34,7 +34,9 @@ build:
     - docker build --build-arg WATTSY_VERSION=$TAG -t $DOCKER_IMAGE:$TAG .
 
 linter:
-  image: $DOCKER_IMAGE:latest
+  image: 
+    name: $DOCKER_IMAGE:latest
+    pull_policy: if-not-present
   stage: qa
   script:
     - pip install pylint
