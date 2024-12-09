@@ -55,7 +55,7 @@ deploy-as-latest:
   services:
     - docker:27.2.0-dind
   dependencies:
-    - tag-to-latest
+    - publish-versions
   script:
     - docker compose pull
     - docker compose up -d
