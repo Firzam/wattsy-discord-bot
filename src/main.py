@@ -11,9 +11,10 @@ wattsyVersion = config.wattsyVersion
 
 async def load_cog():
     logger.info('Loading Cogs')
-    #await wattsyClient.load_extension('cogs.mods')
+    # await wattsyClient.load_extension('cogs.casino')
+    # await wattsyClient.load_extension('cogs.mods')
     await wattsyClient.load_extension('cogs.musicplayer')
-    await wattsyClient.load_extension('cogs.twitch')
+    # await wattsyClient.load_extension('cogs.twitch')
     await wattsyClient.load_extension('controllers.twitch_controller')
 
 @wattsyClient.command
