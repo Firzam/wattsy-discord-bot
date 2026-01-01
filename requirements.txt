@@ -1,5 +1,11 @@
 discord.py
 discord.py[voice]
+psycopg2
 python-dotenv
-youtube-dl
+yt_dlp
 google-api-python-client
+flask
+flask[async]
+pymongo
+waitress
+sqlite3

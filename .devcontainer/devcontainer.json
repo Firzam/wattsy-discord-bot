@@ -1,0 +1,13 @@
+{
+	"name": "Wattsy Dev Env",
+	"image": "python:3.9.20",
+
+	"customizations": {
+		"vscode": {
+			"settings": {},
+			"extensions": [
+				"ms-python.python"
+			]
+		}
+	}
+}
